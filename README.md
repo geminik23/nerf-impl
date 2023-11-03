@@ -28,15 +28,15 @@ Visual results achieved using the NeRF implementation on a chair dataset:
 
 - The result of Voxel Reconstruction:
 
-  ![Voxel Reconstruction](./img/out_voxel_chairs.gif)
+<img src="./img/out_voxel_chairs.gif" width="200">
 
 - The result of NeRF Output:
 
-  ![NeRF Output](./img/out_nerf_chairs.gif)
+<img src="./img/out_nerf_chairs.gif" width="200">
 
 - Training Visualization:
 
-  ![Training Visualization](./img/train_nerf_chair.gif)
+<img src="./img/train_nerf_chair.gif" width="200">
 
 
 ## References
