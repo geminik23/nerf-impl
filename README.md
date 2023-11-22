@@ -6,7 +6,7 @@ The goal of this repository is to gain a comprehensive understanding of NeRF and
 
 The entire implementation was initially done in Jupyter Notebooks, ensuring a step-by-step understanding and testing:
 
-1. [1_camera_rays.ipynb](1_camera_rays.ipynb)
+1. [1_camera.ipynb](1_camera.ipynb)
 2. [2_load_dataset.ipynb](2_load_dataset.ipynb)
 3. [3_volumetric_rendering.ipynb](3_volumetric_rendering.ipynb)
 4. [4_voxel_reconstruction.ipynb](4_voxel_reconstruction.ipynb)
