@@ -4,7 +4,27 @@ import torch
 
 from typing import Tuple, Optional
 
+def to_device(obj, device):
+    if isinstance(obj, list):
+        return [to_device(x, device) for x in obj]
+    elif isinstance(obj, tuple):
+        return tuple(to_device(list(obj), device))
+    elif isinstance(obj, dict):
+        retval = dict()
+        for key, value in obj.items():
+            retval[to_device(key, device)] = to_device(value, device)
+        return retval 
+    elif hasattr(obj, "to"): 
+        return obj.to(device)
+    else:
+        return obj
 
+def positional_encoding(x, L):
+    out = [x]
+    for j in range(L): #??? to include x then should be L_pos*6 + 3 but in paper, dim is 60 with L=10 ...????
+        out.append(torch.sin(2 ** j * x))
+        out.append(torch.cos(2 ** j * x))
+    return torch.cat(out, dim=1)
 
 def generate_rays(w:int, h:int, f, camera_pose:Optional[np.ndarray]=None) -> Tuple[np.ndarray, np.ndarray]:
     """ generate the ray's origin and direction (normalized)"""

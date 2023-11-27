@@ -1,8 +1,29 @@
-# NeRF : Implemented in pytorch.
+# NeRF Implementations in PyTorch: Focus on Speed and Efficiency
 
-The goal of this repository is to gain a comprehensive understanding of NeRF and Volumetric Rendering. 
+The purpose of this repository is to gain a comprehensive understanding of NeRF and Volumetric Rendering, focusing on speed and efficiency of inference. The main objective is to adapt NeRF for real-time applications by experimenting with various accelerated models
 
-## Notebooks
+## Current Implementation: FastNeRF
+
+- Implemented the factorized model.
+- Currently, working on integrating caching mechanism from [VDB: High-Resolution Sparse Volumes with Dynamic Topology](https://ken.museth.org/Publications_files/Museth_TOG13.pdf)
+
+## Future Implementation Plans
+
+- [KiloNeRF: Speeding up Neural Radiance Fields with Thousands of Tiny MLPs](https://arxiv.org/abs/2103.13744)
+- [PlenOctrees for Real-time Rendering of Neural Radiance Fields](https://arxiv.org/abs/2103.14024)
+- [Baking Neural Radiance Fields for Real-Time View Synthesis](https://arxiv.org/abs/2103.14645)
+
+
+## Training
+
+To train the different NeRF models, use the `train.py` script. The script will support multiple models.
+
+```bash
+python train.py --model nerf --config config.json
+```
+
+
+## Original NeRF Implementation in PyTorch
 
 The entire implementation was initially done in Jupyter Notebooks, ensuring a step-by-step understanding and testing:
 
@@ -12,14 +33,6 @@ The entire implementation was initially done in Jupyter Notebooks, ensuring a st
 4. [4_voxel_reconstruction.ipynb](4_voxel_reconstruction.ipynb)
 5. [5_train_nerf.ipynb](5_train_nerf.ipynb)
 
-## Python Source Files
-
-After testing in notebooks, the implementation was converted to Python source files, located in the `/src` directory:
-
-- [nerf_dataset.py](src/nerf_dataset.py)
-- [models.py](src/models.py)
-- [utils.py](src/utils.py)
-- [voxel_render_models.py](src/voxel_render_models.py)
 
 ## Visualizations
 

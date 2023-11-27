@@ -2,6 +2,7 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 import numpy as np
+from .utils import positional_encoding
 
 
 class NeRFModelRenderer(nn.Module):
@@ -38,10 +39,12 @@ class NeRFModelRenderer(nn.Module):
         # print(weight.shape) 
 
         i_weight = (acc_t * alpha).unsqueeze(-1) # [n_rays, n_bins, 1]
-        return (i_weight * c).sum(1)
-        # return (weight.unsqueeze(-1) * c).sum(1) + 1 - weight.sum(-1)
+        color = (i_weight * c).sum(1)
+        return color
+        # return color + 1 - i_weight.sum(-1)
 
 
+##
 # referred Appendix A in original paper.
 class NaiveNeRFModel(nn.Module):
     def __init__(self, L_pos=10, L_dir=4, hidden_dim=256):
@@ -65,17 +68,11 @@ class NaiveNeRFModel(nn.Module):
         self.post_net = nn.Sequential(nn.Linear(hidden_dim + L_dir * 6 + 3, hidden_dim // 2), nn.ReLU(inplace=True),
                                       nn.Linear(hidden_dim // 2, 3), nn.Sigmoid())
         
-    def _positional_encoding(self, x, L):
-        out = [x]
-        for j in range(L): #??? to include x then should be L_pos*6 + 3 but in paper, dim is 60 with L=10 ...????
-            out.append(torch.sin(2 ** j * x))
-            out.append(torch.cos(2 ** j * x))
-        return torch.cat(out, dim=1)
-        
+
     def forward(self, pos, d):
         # positional encoding
-        gamma_x = self._positional_encoding(pos, self.L_pos) # [batch_size, L_pos * 6 + 3] 
-        gamma_d = self._positional_encoding(d, self.L_dir) # [batch_size, L_dir * 6 + 3]
+        gamma_x = positional_encoding(pos, self.L_pos) # [batch_size, L_pos * 6 + 3] 
+        gamma_d = positional_encoding(d, self.L_dir) # [batch_size, L_dir * 6 + 3]
         
         h = self.net1(gamma_x) # [batch_size, hidden_dim]
         h = self.net2(torch.cat((h, gamma_x), dim=1)) # [batch_size, hidden_dim + L_pos * 6 + 3]
@@ -83,3 +80,53 @@ class NaiveNeRFModel(nn.Module):
         h = h[:, :-1] # [batch_size, hidden_dim]
         c = self.post_net(torch.cat((h, gamma_d), dim=1))
         return c, sigma
+
+
+
+##
+# from the FastNeRF paper
+class FastNeRF(nn.Module):
+    def __init__(self, L_pos=10, L_dir=4, D=8, hidden_dim_pos=384, hidden_dim_dir=128):
+        """default value is from 'Implementation' section in paper"""
+        super().__init__()
+        self.L_pos = L_pos
+        self.L_dir = L_dir
+        self.D = D
+
+        # 7 hidden layers
+        self.F_pos = nn.Sequential(nn.Linear(L_pos * 6 + 3, hidden_dim_pos), nn.ReLU(inplace=True),
+                                  nn.Linear(hidden_dim_pos, hidden_dim_pos), nn.ReLU(inplace=True),
+                                  nn.Linear(hidden_dim_pos, hidden_dim_pos), nn.ReLU(inplace=True),
+                                  nn.Linear(hidden_dim_pos, hidden_dim_pos), nn.ReLU(inplace=True),
+                                  nn.Linear(hidden_dim_pos, hidden_dim_pos), nn.ReLU(inplace=True),
+                                  nn.Linear(hidden_dim_pos, hidden_dim_pos), nn.ReLU(inplace=True),
+                                  nn.Linear(hidden_dim_pos, hidden_dim_pos), nn.ReLU(inplace=True),
+                                  nn.Linear(hidden_dim_pos, 3 * D + 1), nn.ReLU(inplace=True))
+
+
+        # 3 hidden layers
+        self.F_dir = nn.Sequential(nn.Linear(L_dir * 6 + 3, hidden_dim_dir), nn.ReLU(inplace=True),
+                                  nn.Linear(hidden_dim_dir, hidden_dim_dir), nn.ReLU(inplace=True),
+                                  nn.Linear(hidden_dim_dir, hidden_dim_dir), nn.ReLU(inplace=True),
+                                  nn.Linear(hidden_dim_dir, D) )
+
+        
+    def forward(self, pos, d):
+        # positional encoding
+        gamma_x = positional_encoding(pos, self.L_pos) # [batch_size, L_pos * 5 + 3] 
+        gamma_d = positional_encoding(d, self.L_dir) # [batch_size, L_dir * 5 + 3]
+
+        h = self.F_pos(gamma_x) # [batch_size, 2*D + 1]
+        uvw = torch.sigmoid(h[:, :-1])  # [ batch_size, 3*D] : value range is in [0, 1]
+        sigma = h[:, -1]
+
+        # inner-product between uvw and beta
+        # beta is weights so apply the softmax 
+        beta = torch.softmax(self.F_dir(gamma_d), -1) # [batch_size, D] 
+
+        # sum(beta [batch_size, 0, D] * uvw[batch_size, 3, D]) -> [batch_size, 3]
+        c = (beta.unsqueeze(1) * uvw.reshape(uvw.shape[0], 3, self.D)).sum(-1)
+        c = torch.bmm(uvw.reshape(uvw.shape[0], 3, self.D),beta.unsqueeze(-1)).squeeze(-1)
+        return c, sigma
+
+

@@ -1,0 +1,20 @@
+{
+    "batch_size":1024,
+    "image_size" : [200, 200],
+    "tn": 2.0,
+    "tf": 6.0,
+    "n_bins": 128,
+    "n_epochs" : 60,
+    "learning_rate" : 1e-4,
+
+    "dataset_path": "d:/data",
+    "dataset_type" : "nerf_synthetic",
+    "obj_name" : "chair",
+
+
+    "checkpoint_dir": "./model_cp",
+    "checkpoint_file": "model_{}.pt",
+    "checkpoint_period": 1,
+
+    "print_progress": false
+}
