@@ -25,6 +25,9 @@ def parse_args():
         help="Path to the configuration file."
     )
 
+    ## TODO
+    # load_checkpoint : to continue train from loaded model
+
     return parser.parse_args()
 
 MODEL = {
@@ -70,7 +73,7 @@ def main():
 
     
     model = Model()
-    loss_func = lambda p, y: ((p - y)**2).mean()
+    loss_func = torch.nn.MSELoss()
     optimizer_builder = lambda model: torch.optim.Adam(model.parameters(), lr=lr)
 
     checkpoint_dir=config["checkpoint_dir"]

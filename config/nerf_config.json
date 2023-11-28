@@ -1,5 +1,5 @@
 {
-    "batch_size":1024,
+    "batch_size": 1024,
     "image_size" : [200, 200],
     "tn": 2.0,
     "tf": 6.0,
@@ -13,7 +13,7 @@
 
 
     "checkpoint_dir": "./model_cp",
-    "checkpoint_file": "model_{}.pt",
+    "checkpoint_file": "nerf_{}.pt",
     "checkpoint_period": 1,
 
     "print_progress": false

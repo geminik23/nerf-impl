@@ -101,16 +101,15 @@ class FastNeRF(nn.Module):
                                   nn.Linear(hidden_dim_pos, hidden_dim_pos), nn.ReLU(inplace=True),
                                   nn.Linear(hidden_dim_pos, hidden_dim_pos), nn.ReLU(inplace=True),
                                   nn.Linear(hidden_dim_pos, hidden_dim_pos), nn.ReLU(inplace=True),
-                                  nn.Linear(hidden_dim_pos, 3 * D + 1), nn.ReLU(inplace=True))
-
+                                  nn.Linear(hidden_dim_pos, 3 * D + 1))
 
         # 3 hidden layers
         self.F_dir = nn.Sequential(nn.Linear(L_dir * 6 + 3, hidden_dim_dir), nn.ReLU(inplace=True),
                                   nn.Linear(hidden_dim_dir, hidden_dim_dir), nn.ReLU(inplace=True),
                                   nn.Linear(hidden_dim_dir, hidden_dim_dir), nn.ReLU(inplace=True),
-                                  nn.Linear(hidden_dim_dir, D) )
-
+                                  nn.Linear(hidden_dim_dir, D))
         
+
     def forward(self, pos, d):
         # positional encoding
         gamma_x = positional_encoding(pos, self.L_pos) # [batch_size, L_pos * 5 + 3] 
@@ -118,14 +117,14 @@ class FastNeRF(nn.Module):
 
         h = self.F_pos(gamma_x) # [batch_size, 2*D + 1]
         uvw = torch.sigmoid(h[:, :-1])  # [ batch_size, 3*D] : value range is in [0, 1]
-        sigma = h[:, -1]
+        sigma = torch.sigmoid(h[:, -1])
 
         # inner-product between uvw and beta
         # beta is weights so apply the softmax 
         beta = torch.softmax(self.F_dir(gamma_d), -1) # [batch_size, D] 
 
         # sum(beta [batch_size, 0, D] * uvw[batch_size, 3, D]) -> [batch_size, 3]
-        c = (beta.unsqueeze(1) * uvw.reshape(uvw.shape[0], 3, self.D)).sum(-1)
+        # c = (beta.unsqueeze(1) * uvw.reshape(uvw.shape[0], 3, self.D)).sum(-1) 
         c = torch.bmm(uvw.reshape(uvw.shape[0], 3, self.D),beta.unsqueeze(-1)).squeeze(-1)
         return c, sigma
 

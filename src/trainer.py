@@ -4,11 +4,13 @@ import numpy as np
 import tqdm
 import pandas as pd
 import os
+import matplotlib.pyplot as plt
 
 from tqdm.autonotebook import tqdm as nb_tqdm
 from tqdm import tqdm
 
 from typing import Optional, Tuple
+
 
 
 from .utils import to_device

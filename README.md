@@ -19,13 +19,13 @@ The purpose of this repository is to gain a comprehensive understanding of NeRF 
 To train the different NeRF models, use the `train.py` script. The script will support multiple models.
 
 ```bash
-python train.py --model nerf --config config.json
+python train.py --model nerf --config ./config/nerf_config.json
 ```
 
 
 ## Original NeRF Implementation in PyTorch
 
-The entire implementation was initially done in Jupyter Notebooks, ensuring a step-by-step understanding and testing:
+The entire implementation was initially done in Jupyter Notebooks.
 
 1. [1_camera.ipynb](1_camera.ipynb)
 2. [2_load_dataset.ipynb](2_load_dataset.ipynb)
@@ -49,6 +49,12 @@ Visual results achieved using the NeRF implementation on a chair dataset:
 - Training Visualization:
 
 <img src="./img/train_nerf_chair.gif" width="200">
+
+
+
+## Comparing Inference Speed
+
+**TODO**
 
 
 ## References
